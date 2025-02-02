@@ -15,18 +15,22 @@ const selectRandomImage = () => {
 }
 
 export default function EnginnerProjects({languageSelect}:{languageSelect:string}){
-    const {login} = useAuth()
+    const {auth} = useAuth()
     const [projects, setProjects] = useState<FirebaseMetadataDocument[]>([])
 
     async function fetchProjects() {
-        const token = await login()
+        const _auth = await auth()
+
+        if(!_auth.auth){
+            return
+        }
 
         const fetchedProjects = await new Firebase().get();
         const translatedProjects = await Promise.all(
           fetchedProjects.map(async (project) => ({
             ...project,
-            Name: languageSelect == 'br' ? project.Name : await translateWithCache(token, project.Name, languageSelect == 'br' ? 'pt': 'en', Translate),
-            Description: languageSelect == 'br' ?  project?.metaDataProject?.description || null : await translateWithCache(token, project?.metaDataProject?.description || null, languageSelect == 'br' ? 'pt': 'en', Translate),
+            Name: languageSelect == 'br' ? project.Name : await translateWithCache(_auth.token, project.Name, languageSelect == 'br' ? 'pt': 'en', Translate),
+            Description: languageSelect == 'br' ?  project?.metaDataProject?.description || null : await translateWithCache(_auth.token, project?.metaDataProject?.description || null, languageSelect == 'br' ? 'pt': 'en', Translate),
           }))
         );
         setProjects(translatedProjects as FirebaseMetadataDocument[]);

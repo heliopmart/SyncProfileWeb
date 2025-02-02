@@ -16,12 +16,17 @@ interface AboutProjectProps {
 }
 
 export default function AboutProject({ language, project, type }: AboutProjectProps) {
-    const {login, setRefreshedToken} = useAuth()
+    const {auth} = useAuth()
     const [content, setContent] = useState<string>(language.defaultInformationProject);
     const [isLoading, setIsLoading] = useState<boolean>(true);
 
     async function fetchMarkdownContent() {
-        const token = await login()
+        const _auth = await auth()
+
+        if(!_auth.auth){
+            return
+        }
+
         try {
             setIsLoading(true);
 
@@ -31,7 +36,7 @@ export default function AboutProject({ language, project, type }: AboutProjectPr
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
-                        "Authorization": `Bearer ${token}`
+                        "Authorization": `Bearer ${_auth.token}`
                     },
                     body: JSON.stringify({
                         repoName: project.software?.gitHubData.name || ""
@@ -44,10 +49,6 @@ export default function AboutProject({ language, project, type }: AboutProjectPr
                     return 
                 }
 
-                if(data_readmeGit.refreshed){
-                    setRefreshedToken(data_readmeGit.token)
-                }
-
                 markdownContent = data_readmeGit.data
             }else{
                 if(getCache(project.mechanic?.url_readme || "")){
@@ -58,7 +59,7 @@ export default function AboutProject({ language, project, type }: AboutProjectPr
                         method: "POST",
                         headers: {
                             "Content-Type": "application/json",
-                            "Authorization": `Bearer ${token}`
+                            "Authorization": `Bearer ${_auth.token}`
                         },
                         body: JSON.stringify({
                             repoName: project.mechanic?.url_readme || ""
@@ -70,11 +71,6 @@ export default function AboutProject({ language, project, type }: AboutProjectPr
                     if(!data_readmeAzure.status){
                         return 
                     }
-    
-                    if(data_readmeAzure.refreshed){
-                        setRefreshedToken(data_readmeAzure.token)
-                    }
-
                     setCache(project.mechanic?.url_readme || "", data_readmeAzure.data)
                     markdownContent = data_readmeAzure.data
                 }
@@ -84,7 +80,7 @@ export default function AboutProject({ language, project, type }: AboutProjectPr
                 method: 'POST',
                 headers: {
                   'Content-Type': 'application/json',
-                  "Authorization": `Bearer ${token}`
+                  "Authorization": `Bearer ${_auth.token}`
                 },
                 body: JSON.stringify({ markdownContent })
             });
@@ -92,10 +88,6 @@ export default function AboutProject({ language, project, type }: AboutProjectPr
 
             if(!data.status){
                 return 
-            }
-
-            if(data.refreshed){
-                setRefreshedToken(data.token)
             }
 
             if (data.data) {

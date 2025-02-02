@@ -21,7 +21,7 @@ interface InformationProject {
 }
 
 export default function SoftwareProjects({ languageSelect }: { languageSelect: string }) {
-    const {login, setRefreshedToken} = useAuth()
+    const {auth} = useAuth()
     const [projects, setProjects] = useState<InformationProject[]>([]);
     const router = useRouter();
     
@@ -66,20 +66,20 @@ export default function SoftwareProjects({ languageSelect }: { languageSelect: s
 
     useEffect(() => {
         async function fetchProjects() {
-            const token = await login()
+            const _auth = await auth()
+
+            if(!_auth.auth){
+                return 
+            }
 
             const res = await fetch("https://syncprofilewebbackend-production.up.railway.app/github/repo", {
                 method: "GET",
                 headers: {
                     "Content-Type": "application/json",
-                    "Authorization": `Bearer ${token}`
+                    "Authorization": `Bearer ${_auth.token}`
                 }
             });
             const data = await res.json();
-
-            if(data.refreshed){
-                setRefreshedToken(data.token)
-            }
 
             if(!data.status){
                 console.error("GitHub Api 100% used")

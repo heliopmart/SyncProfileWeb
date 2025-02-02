@@ -9,7 +9,6 @@ import './style.scss';
 
 type Type = 'software' | 'mechanic'
 type Token = string |null
-type RefreshToken = (token:string)=>void
 
 // import component
 import {HeaderProject, SectionHeaderProjectImage, AboutProject, SectionAboutProjectImage, Footer, FileAndProject} from '@/app/components/components'
@@ -31,7 +30,7 @@ import LanguagesFileAndProjectUs from '@/app/i18n/FileAndProject_us.json'
 const LanguageWarningMobile = {br: {text: "O gerencimento dos arquivos não estão disponiveis no mobile"}, us: {text: "File management is not available on mobile"}}
 
 // get github project by id
-async function getGitHubProjectById(token:Token, refresh:RefreshToken, id:string){    
+async function getGitHubProjectById(token:Token, id:string){    
     try{
         const res = await fetch("https://syncprofilewebbackend-production.up.railway.app/github/repo/id", {
             method: "POST",
@@ -44,10 +43,6 @@ async function getGitHubProjectById(token:Token, refresh:RefreshToken, id:string
             })
         });
         const data = await res.json();
-
-        if(data.refreshed){
-            refresh(data.token)
-        }
 
         if(!data.status){
             console.error("Error: ", data.message)
@@ -73,7 +68,7 @@ async function getGitHubProjectById(token:Token, refresh:RefreshToken, id:string
     }
 }
 
-async function getLanguagesUsed(token:Token, refresh:RefreshToken, languages_url:string): Promise<string[] | null>{    
+async function getLanguagesUsed(token:Token, languages_url:string): Promise<string[] | null>{    
     try{
         const res = await fetch("https://syncprofilewebbackend-production.up.railway.app/github/repo/languages", {
             method: "POST",
@@ -86,10 +81,6 @@ async function getLanguagesUsed(token:Token, refresh:RefreshToken, languages_url
             })
         });
         const data = await res.json();
-
-        if(data.refreshed){
-            refresh(data.token)
-        }
 
         if(!data.status){
             console.error("Error: ", data.message)
@@ -159,7 +150,7 @@ function differenceMonth(create:string, push:string){
 
 
 export default function Project() {
-    const {login, setRefreshedToken} = useAuth()
+    const {auth} = useAuth()
     const [language, setLanguage] = useState<string>('br');
     const [project, setProject] = useState<ProjectData>()
     const params = useParams();
@@ -180,18 +171,21 @@ export default function Project() {
 
 
     async function construcProjectParams(){
-        const token = await login()
-
+        const _auth = await auth()
         let data;
 
+        if(!_auth.auth){
+            return 
+        }
+
         if(getType == 'software'){
-            const githubProject = await getGitHubProjectById(token, setRefreshedToken, getId)   
+            const githubProject = await getGitHubProjectById(_auth.token, getId)   
             
             if(!githubProject){
                 return 
             }
             
-            const languages = await getLanguagesUsed(token, setRefreshedToken, githubProject.languages_url)
+            const languages = await getLanguagesUsed(_auth.token, githubProject.languages_url)
             data = {
                 repo_id: getId,
                 gitHubData: githubProject,
