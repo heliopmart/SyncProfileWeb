@@ -1,0 +1,66 @@
+@mixin Flex( $direction, $wrap, $align, $content) {
+    display: flex;
+    flex-direction: $direction;
+    flex-wrap: $wrap;
+    align-items: $align;
+    justify-content: $content;
+}
+
+.headerProject_images{
+    width: 100%;
+    height: auto;
+    @include Flex(row, nowrap, center, space-between);
+    gap: 10%;
+    padding: 10px 1% 10px 5%;
+    box-sizing: border-box;
+    position: relative;
+    margin: 0px auto;
+    bottom: 176px;
+
+    #forder_file_man{
+        width: 100%;
+        height: 100%;
+        max-width: 400px;
+        max-height: 300px;
+        min-width: 280px;
+        min-height: 180px;
+        position: relative;
+        left: 15%;
+        
+        object-fit: contain;
+    }
+
+    #team_up{
+        width: 100%;
+        height: 100%;
+        max-width: 420px;
+        max-height: 420px;
+        min-width: 300px;
+        min-height: 300px;
+        position: relative;
+        top: 100px;        
+        object-fit: contain;
+    }
+}
+
+@media (max-width: 1470px) {
+    .headerProject_images{
+        bottom: 110px;
+        @include Flex(row, nowrap, center, center);
+        gap: 10%;
+        padding: 10px 1%;
+
+        #forder_file_man{
+            left: 0px;
+            max-width: 300px;
+            max-height: 250px;
+            min-width: 200px;
+            min-height: 150px;
+        }
+
+        #team_up{
+            display: none;
+        }
+    }
+
+}
