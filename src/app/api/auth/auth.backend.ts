@@ -58,8 +58,8 @@ export async function VerifyAuth(token:string|null): Promise<Authinterface> {
         }
 
         if(data.refreshed){
-            cookieService.setCookie("authToken", data.token, {secure: true, httpOnly: true });
-            cookieService.setCookie("authExpire",new Date().getTime().toString(), {secure: true, httpOnly: true });
+            cookieService.setCookie("authToken", data.token);
+            cookieService.setCookie("authExpire",new Date().getTime().toString());
         }
 
         return {token: data.token, auth: data.auth};

@@ -40,7 +40,7 @@ export function useAuth() {
         const authToken = await AuthBackend(backendConfig.apiKey, backendConfig.secretKey);
 
         if (authToken) {
-            cookieService.setCookie("authToken", authToken.token, {secure: true, httpOnly: true });
+            cookieService.setCookie("authToken", authToken.token);
             return authToken.token;
         } else {
             return null;

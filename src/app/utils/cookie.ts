@@ -5,13 +5,8 @@ class CookieService {
     return Cookies.get(name);
   }
 
-  setCookie(name: string, value: string, options?: Cookies.CookieAttributes) {
-    const now = new Date();
-    const expires = new Date(now.getTime() + (90 * 60 * 1000));
-
-    const updatedOptions = { ...options, expires };
-
-    Cookies.set(name, value, updatedOptions);
+  setCookie(name: string, value: string) {
+    Cookies.set(name, value, { secure: true });
   }
 
   removeCookie(name: string) {
