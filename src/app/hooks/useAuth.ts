@@ -15,7 +15,7 @@ export function useAuth() {
             setLoading(false);
             return localStorage.getItem("authToken") ; // 🔹 Retorna o token atual se ainda for válido
         }
-    
+
         const authToken = await AuthBackend(backendConfig.apiKey, backendConfig.secretKey);
     
         if (authToken) {

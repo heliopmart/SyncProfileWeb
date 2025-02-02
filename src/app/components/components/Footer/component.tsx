@@ -1,4 +1,5 @@
 import UselessBlob from 'useless-blobs/lib/components';
+import { useState, useEffect } from 'react';
 import Image from 'next/image'
 import Link from 'next/link'
 import InterfaceFooter from "@/app/i18n/Footer"
@@ -15,6 +16,15 @@ const subject = 'PROFILE LINK | <Seu assunto aqui>'
 const body = 'Olá Hélio! \n <seu assunto aqui>'
 
 export default function Footer({language, isMobile=false, downloadResume}:{language:InterfaceFooter, isMobile?: boolean, downloadResume:downloadResume}){
+    const [blobSize, setBlobSize] = useState({ width: 400, height: 450 });
+
+    useEffect(() => {
+        setBlobSize({
+            width: isMobile ? 300 : 400,
+            height: isMobile ? 350 : 450
+        });
+    }, [isMobile]);
+  
     return (
         <footer>
             <div className="content-title">
@@ -50,8 +60,8 @@ export default function Footer({language, isMobile=false, downloadResume}:{langu
                             fill='#6380B0'
                             stroke='none'
                             verts={12}
-                            height={isMobile ? 350 : 450}
-                            width={isMobile ? 300 : 400}
+                            height={blobSize.height}
+                            width={blobSize.width}
                             irregularity={0.1}
                             spikiness={0.3  }
                             boundingShape='rectangle'
