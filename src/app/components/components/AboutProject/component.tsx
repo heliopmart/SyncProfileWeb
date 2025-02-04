@@ -55,7 +55,7 @@ export default function AboutProject({ language, project, type }: AboutProjectPr
                     markdownContent = getCache(project.mechanic?.url_readme || "")
                 }else{
 
-                    const response_readmeAzure = await fetch("https://syncprofilewebbackend-production.up.railway.app/github/md", {
+                    const response_readmeAzure = await fetch("https://syncprofilewebbackend-production.up.railway.app/azure/md", {
                         method: "POST",
                         headers: {
                             "Content-Type": "application/json",

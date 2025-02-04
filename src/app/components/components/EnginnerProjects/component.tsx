@@ -26,6 +26,7 @@ export default function EnginnerProjects({languageSelect}:{languageSelect:string
         }
 
         const fetchedProjects = await new Firebase().get();
+        
         const translatedProjects = await Promise.all(
           fetchedProjects.map(async (project) => ({
             ...project,

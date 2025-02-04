@@ -43,7 +43,7 @@ export default function Footer({language, isMobile=false, downloadResume}:{langu
                     </div>
                     <div className="content-information">
                         <Image src={LinkedinIcon} alt={'linkedin'} width={80} height={80}/>
-                        <Link href={"https://www.linkedin.com/in/h%C3%A9lio-peres-martins-neto-b94153200/"}target="_blank" rel="noopener noreferrer">
+                        <Link href={"https://www.linkedin.com/in/heliopmart/"}target="_blank" rel="noopener noreferrer">
                             <span className='text informationText'>Hélio Peres Martins Neto</span>
                         </Link>
                     </div>
