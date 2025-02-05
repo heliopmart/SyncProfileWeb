@@ -1,4 +1,3 @@
-import { backendConfig } from '@/app/config/backendConfig';
 import { AuthBackend, VerifyAuth } from "@/app/api/auth/auth.backend";
 import cookieService from '@/app/utils/cookie'; // Importe sua classe de gerenciamento de cookies
 
@@ -37,7 +36,7 @@ export function useAuth() {
     }
 
     async function login(): Promise<string | null> {
-        const authToken = await AuthBackend(backendConfig.apiKey, backendConfig.secretKey);
+        const authToken = await AuthBackend();
 
         if (authToken) {
             cookieService.setCookie("authToken", authToken.token);
