@@ -9,6 +9,10 @@ import './style.scss';
 
 type Type = 'software' | 'mechanic'
 type Token = string |null
+interface dataUserToAuth{
+    device: string,
+    nonce: () => string
+}
 
 // import component
 import {HeaderProject, SectionHeaderProjectImage, AboutProject, SectionAboutProjectImage, Footer, FileAndProject} from '@/app/components/components'
@@ -30,15 +34,17 @@ import LanguagesFileAndProjectUs from '@/app/i18n/FileAndProject_us.json'
 const LanguageWarningMobile = {br: {text: "O gerencimento dos arquivos não estão disponiveis no mobile"}, us: {text: "File management is not available on mobile"}}
 
 // get github project by id
-async function getGitHubProjectById(token:Token, id:string){    
+async function getGitHubProjectById(token:Token, id:string, dataUser:dataUserToAuth){  
     try{
         const res = await fetch("https://syncprofilewebbackend-production.up.railway.app/github/repo/id", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
-                "Authorization": `Bearer ${token}`
+                "Authorization": `Bearer ${token}`,
+                "nonce": dataUser.nonce()
             },
             body: JSON.stringify({
+                device: dataUser.device,
                 repoId: id
             })
         });
@@ -68,15 +74,17 @@ async function getGitHubProjectById(token:Token, id:string){
     }
 }
 
-async function getLanguagesUsed(token:Token, languages_url:string): Promise<string[] | null>{    
+async function getLanguagesUsed(token:Token, languages_url:string, dataUser:dataUserToAuth): Promise<string[] | null>{    
     try{
         const res = await fetch("https://syncprofilewebbackend-production.up.railway.app/github/repo/languages", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
-                "Authorization": `Bearer ${token}`
+                "Authorization": `Bearer ${token}`,
+                "nonce": `${dataUser.nonce()}`
             },
             body: JSON.stringify({
+                device: dataUser.device,
                 url: languages_url
             })
         });
@@ -174,18 +182,18 @@ export default function Project() {
         const _auth = await auth()
         let data;
 
-        if(!_auth.auth){
+        if(!_auth.auth || !_auth.data){
             return 
         }
 
         if(getType == 'software'){
-            const githubProject = await getGitHubProjectById(_auth.token, getId)   
+            const githubProject = await getGitHubProjectById(_auth.token, getId, _auth.data)   
             
             if(!githubProject){
                 return 
             }
             
-            const languages = await getLanguagesUsed(_auth.token, githubProject.languages_url)
+            const languages = await getLanguagesUsed(_auth.token, githubProject.languages_url, _auth.data)
             data = {
                 repo_id: getId,
                 gitHubData: githubProject,

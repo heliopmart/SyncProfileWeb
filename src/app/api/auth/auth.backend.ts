@@ -2,27 +2,39 @@ import cookieService from '@/app/utils/cookie'; // Importe sua classe de gerenci
 
 interface returnInterface{
     token: string,
-    expire: string
+    expire: string,
+    data?: {
+        nonce: () => string,
+        device: string
+    }
 }
 
 interface Authinterface{
     token: string|null
     auth: boolean
+    data?: {
+        nonce: () => string,
+        device: string
+    }
+}
+
+interface DataUserToAuthInterface{
+    nonce: () => string,
+    device: string
 }
 
 export async function AuthBackend(): Promise<returnInterface | null> {
     try {
-        const deviceHash = await getDeviceHash();
-        const nonce = generateNonce();
+        const dataUserToAuth= await getDataUserToAuth()
 
         const response = await fetch("https://syncprofilewebbackend-production.up.railway.app/token/auth", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
-                "nonce": nonce
+                "nonce": dataUserToAuth.nonce()
             },
             body: JSON.stringify({
-                device: deviceHash
+                device: dataUserToAuth.device
             })
         });
 
@@ -32,7 +44,7 @@ export async function AuthBackend(): Promise<returnInterface | null> {
             throw new Error(data.error || "Falha na autenticação");
         }
 
-        return {token: data.token, expire: data.expire};
+        return {token: data.token, expire: data.expire, data: dataUserToAuth};
     } catch (error) {
         console.error("Erro na autenticação:", error);
         return null;
@@ -45,18 +57,17 @@ export async function VerifyAuth(token:string|null): Promise<Authinterface> {
     }
     
     try {
-        const deviceHash = await getDeviceHash();
-        const nonce = generateNonce();
+        const dataUserToAuth= await getDataUserToAuth()
 
         const response = await fetch("https://syncprofilewebbackend-production.up.railway.app/token/validate", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
                 "Authorization": `Bearer ${token}`,
-                "nonce": nonce
+                "nonce": dataUserToAuth.nonce()
             },
             body: JSON.stringify({
-                device: deviceHash
+                device: dataUserToAuth.device
             })
         });
 
@@ -71,11 +82,15 @@ export async function VerifyAuth(token:string|null): Promise<Authinterface> {
             cookieService.setCookie("authExpire",new Date().getTime().toString());
         }
 
-        return {token: data.token, auth: data.auth};
+        return {token: data.token, auth: data.auth, data: dataUserToAuth};
     } catch (error) {
         console.error("Erro na autenticação:", error);
         return {token: null, auth: false};
     }
+}
+
+export async function getDataUserToAuth():Promise<DataUserToAuthInterface>{
+    return {nonce: generateNonce, device: await getDeviceHash()}
 }
 
 function generateNonce() {
@@ -84,7 +99,6 @@ function generateNonce() {
         .map(byte => charset[byte % charset.length])
         .join("");
 }
-
 
 async function getDeviceHash() {
     const deviceInfo = {

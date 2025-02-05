@@ -68,16 +68,20 @@ export default function SoftwareProjects({ languageSelect }: { languageSelect: s
         async function fetchProjects() {
             const _auth = await auth()
 
-            if(!_auth.auth){
+            if(!_auth.auth || !_auth.data){
                 return 
             }
 
             const res = await fetch("https://syncprofilewebbackend-production.up.railway.app/github/repo", {
-                method: "GET",
+                method: "POST",
                 headers: {
                     "Content-Type": "application/json",
-                    "Authorization": `Bearer ${_auth.token}`
-                }
+                    "Authorization": `Bearer ${_auth.token}`,
+                    "nonce": `${_auth.data.nonce()}`
+                },
+                body: JSON.stringify({
+                    device: _auth.data.device
+                })
             });
             const data = await res.json();
 

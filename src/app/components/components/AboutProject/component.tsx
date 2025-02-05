@@ -23,7 +23,7 @@ export default function AboutProject({ language, project, type }: AboutProjectPr
     async function fetchMarkdownContent() {
         const _auth = await auth()
 
-        if(!_auth.auth){
+        if(!_auth.auth || !_auth.data){
             return
         }
 
@@ -36,9 +36,11 @@ export default function AboutProject({ language, project, type }: AboutProjectPr
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
-                        "Authorization": `Bearer ${_auth.token}`
+                        "Authorization": `Bearer ${_auth.token}`,
+                        "nonce": `${_auth.data.nonce()}`
                     },
                     body: JSON.stringify({
+                        device: _auth.data.device,
                         repoName: project.software?.gitHubData.name || ""
                     })
                 });
@@ -59,9 +61,11 @@ export default function AboutProject({ language, project, type }: AboutProjectPr
                         method: "POST",
                         headers: {
                             "Content-Type": "application/json",
-                            "Authorization": `Bearer ${_auth.token}`
+                            "Authorization": `Bearer ${_auth.token}`,
+                            "nonce": `${_auth.data.nonce()}`
                         },
                         body: JSON.stringify({
+                            device: _auth.data.device,
                             repoName: project.mechanic?.url_readme || ""
                         })
                     });
@@ -80,9 +84,10 @@ export default function AboutProject({ language, project, type }: AboutProjectPr
                 method: 'POST',
                 headers: {
                   'Content-Type': 'application/json',
-                  "Authorization": `Bearer ${_auth.token}`
+                  "Authorization": `Bearer ${_auth.token}`,
+                  "nonce": `${_auth.data.nonce()}`
                 },
-                body: JSON.stringify({ markdownContent })
+                body: JSON.stringify({ markdownContent:markdownContent, device: _auth.data.device })
             });
             const data = await response.json();
 

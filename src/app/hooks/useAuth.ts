@@ -4,6 +4,18 @@ import cookieService from '@/app/utils/cookie'; // Importe sua classe de gerenci
 interface Authinterface {
     token: string | null;
     auth: boolean;
+    data?: {
+        device: string,
+        nonce: () => string
+    }
+}
+
+interface AuthLoginInterface{
+    token: string,
+    data?: {
+        device: string,
+        nonce: () => string
+    }
 }
 
 let authPromise: Promise<Authinterface> | null = null;
@@ -18,14 +30,13 @@ export function useAuth() {
         const storedToken = cookieService.getCookie("authToken");
 
         if (storedToken) {
-            const verify = await VerifyAuth(storedToken);
-            return verify;
+            return await VerifyAuth(storedToken);
         }
 
         authPromise = new Promise<Authinterface>(async (resolve) => {
-            const token = await login();
-            if (token) {
-                resolve({ auth: true, token });
+            const auth = await login();
+            if (auth?.token && auth.data) {
+                resolve({ auth: true, token: auth.token, data: auth.data });
             } else {
                 resolve({ auth: false, token: null });
             }
@@ -35,12 +46,12 @@ export function useAuth() {
         return authPromise;
     }
 
-    async function login(): Promise<string | null> {
-        const authToken = await AuthBackend();
+    async function login(): Promise<AuthLoginInterface | null> {
+        const auth = await AuthBackend();
 
-        if (authToken) {
-            cookieService.setCookie("authToken", authToken.token);
-            return authToken.token;
+        if (auth?.token && auth.data) {
+            cookieService.setCookie("authToken", auth.token);
+            return {token: auth.token, data: auth.data}
         } else {
             return null;
         }
