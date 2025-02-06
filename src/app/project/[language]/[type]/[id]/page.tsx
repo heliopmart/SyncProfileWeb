@@ -1,18 +1,14 @@
 'use client'
 import {useEffect, useState} from 'react'
 import {Firebase, Analytics} from '@/app/functions/functions'
-import {useAuth} from '@/app/hooks/useAuth'
+import {AuthWithouHook, refreshToken} from '@/app/hooks/useAuth'
+import {backendConfig} from '@/app/config/backendConfig'
 import { useParams } from 'next/navigation'; 
 import './style.scss';
 
 // interface
 
 type Type = 'software' | 'mechanic'
-type Token = string |null
-interface dataUserToAuth{
-    device: string,
-    nonce: () => string
-}
 
 // import component
 import {HeaderProject, SectionHeaderProjectImage, AboutProject, SectionAboutProjectImage, Footer, FileAndProject} from '@/app/components/components'
@@ -34,17 +30,23 @@ import LanguagesFileAndProjectUs from '@/app/i18n/FileAndProject_us.json'
 const LanguageWarningMobile = {br: {text: "O gerencimento dos arquivos não estão disponiveis no mobile"}, us: {text: "File management is not available on mobile"}}
 
 // get github project by id
-async function getGitHubProjectById(token:Token, id:string, dataUser:dataUserToAuth){  
+async function getGitHubProjectById(id:string){  
     try{
-        const res = await fetch("https://syncprofilewebbackend-production.up.railway.app/github/repo/id", {
+        const _auth = await AuthWithouHook()
+
+        if(!_auth.auth || !_auth.data){
+            return;
+        }
+
+        const res = await fetch(backendConfig.BackendUrlRoot+"/github/repo/id", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
-                "Authorization": `Bearer ${token}`,
-                "nonce": dataUser.nonce()
+                "Authorization": `Bearer ${_auth.token}`,
+                "nonce": _auth.data.nonce()
             },
             body: JSON.stringify({
-                device: dataUser.device,
+                device: _auth.data.device,
                 repoId: id
             })
         });
@@ -55,6 +57,7 @@ async function getGitHubProjectById(token:Token, id:string, dataUser:dataUserToA
             return null
         }
 
+        refreshToken(data.token)
         const informationProject = data.data
 
         return {
@@ -74,17 +77,23 @@ async function getGitHubProjectById(token:Token, id:string, dataUser:dataUserToA
     }
 }
 
-async function getLanguagesUsed(token:Token, languages_url:string, dataUser:dataUserToAuth): Promise<string[] | null>{    
+async function getLanguagesUsed(languages_url:string): Promise<string[] | null>{    
     try{
-        const res = await fetch("https://syncprofilewebbackend-production.up.railway.app/github/repo/languages", {
+        const _auth = await AuthWithouHook()
+
+        if(!_auth.auth || !_auth.data){
+            return null;
+        }
+
+        const res = await fetch(backendConfig.BackendUrlRoot+"/github/repo/languages", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
-                "Authorization": `Bearer ${token}`,
-                "nonce": `${dataUser.nonce()}`
+                "Authorization": `Bearer ${_auth.token}`,
+                "nonce": `${_auth.data.nonce()}`
             },
             body: JSON.stringify({
-                device: dataUser.device,
+                device: _auth.data.device,
                 url: languages_url
             })
         });
@@ -95,6 +104,7 @@ async function getLanguagesUsed(token:Token, languages_url:string, dataUser:data
             return null
         }
 
+        refreshToken(data.token)
         return data.data
 
     }catch(error){
@@ -119,6 +129,8 @@ async function getFirebaseProjectById(id:string){
             ]
     */
     if(data){
+        const url_readme = data?.url_readme.includes(".") ? data.url_readme.split(".")[0] : data?.url_readme
+
         return {
             id: id,
             AsyncTime: data.AsyncTime,
@@ -126,7 +138,7 @@ async function getFirebaseProjectById(id:string){
             DateTime: data.DateTime,
             FolderId: data.FolderId,
             name: data.Name,
-            url_readme: data?.url_readme || "", 
+            url_readme: url_readme || "", 
             metaDataProject: {
                 description: data.metaDataProject?.description || "",
                 url_image: data.metaDataProject?.url_image || "",
@@ -158,7 +170,6 @@ function differenceMonth(create:string, push:string){
 
 
 export default function Project() {
-    const {auth} = useAuth()
     const [language, setLanguage] = useState<string>('br');
     const [project, setProject] = useState<ProjectData>()
     const params = useParams();
@@ -179,21 +190,15 @@ export default function Project() {
 
 
     async function construcProjectParams(){
-        const _auth = await auth()
         let data;
-
-        if(!_auth.auth || !_auth.data){
-            return 
-        }
-
         if(getType == 'software'){
-            const githubProject = await getGitHubProjectById(_auth.token, getId, _auth.data)   
+            const githubProject = await getGitHubProjectById(getId)   
             
             if(!githubProject){
                 return 
             }
             
-            const languages = await getLanguagesUsed(_auth.token, githubProject.languages_url, _auth.data)
+            const languages = await getLanguagesUsed(githubProject.languages_url)
             data = {
                 repo_id: getId,
                 gitHubData: githubProject,

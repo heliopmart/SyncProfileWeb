@@ -1,4 +1,6 @@
 import {getDataUserToAuth} from '@/app/api/auth/auth.backend'
+import {backendConfig} from '@/app/config/backendConfig'
+import {refreshToken} from '@/app/hooks/useAuth'
 const handleTranslate = async (token:string|null, text: string, targetLanguage: string):Promise<string> => {
     
     try{
@@ -8,7 +10,7 @@ const handleTranslate = async (token:string|null, text: string, targetLanguage: 
             return text;
         }
 
-        const res = await fetch("https://syncprofilewebbackend-production.up.railway.app/azure/translate", {
+        const res = await fetch(backendConfig+"/azure/translate", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -29,6 +31,7 @@ const handleTranslate = async (token:string|null, text: string, targetLanguage: 
             return text
         }
 
+        refreshToken(data.token)
         return data.data[0].translations[0].text
     }catch(error){
         console.error("Error: ", error)

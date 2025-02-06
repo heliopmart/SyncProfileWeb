@@ -59,7 +59,7 @@
             width: 100%;
             height: auto;
             @include Flex(column, nowrap, start, start);
-            gap: 5%;
+            gap: 30px;
             margin-top: 50px;
 
             .contentFile{

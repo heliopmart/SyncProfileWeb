@@ -2,6 +2,7 @@
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
 import {useAuth} from '@/app/hooks/useAuth'
+import {backendConfig} from '@/app/config/backendConfig'
 import {getCache, setCache} from '@/app/utils/mdCache'
 import InterfaceAboutProject from '@/app/i18n/AboutProject';
 import ProjectData from "@/app/interfaces/ProjectData"
@@ -16,23 +17,46 @@ interface AboutProjectProps {
 }
 
 export default function AboutProject({ language, project, type }: AboutProjectProps) {
-    const {auth} = useAuth()
+    const {ValidateRequest, refreshTokenByAuth} = useAuth()
     const [content, setContent] = useState<string>(language.defaultInformationProject);
     const [isLoading, setIsLoading] = useState<boolean>(true);
 
-    async function fetchMarkdownContent() {
-        const _auth = await auth()
+    async function getMd(){
+        const _auth = await ValidateRequest()
 
         if(!_auth.auth || !_auth.data){
             return
         }
 
-        try {
-            setIsLoading(true);
+        let markdownContent;
+        if(type != 'mechanic'){
+            const response_readmeGit = await fetch(backendConfig.BackendUrlRoot+"/github/md", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${_auth.token}`,
+                    "nonce": `${_auth.data.nonce()}`
+                },
+                body: JSON.stringify({
+                    device: _auth.data.device,
+                    repoName: project.software?.gitHubData.name || ""
+                })
+            });
 
-            let markdownContent;
-            if(type != 'mechanic'){
-                const response_readmeGit = await fetch("https://syncprofilewebbackend-production.up.railway.app/github/md", {
+            const data_readmeGit = await response_readmeGit.json();
+
+            if(!data_readmeGit.status){
+                return 
+            }
+
+            refreshTokenByAuth(data_readmeGit.token)
+            markdownContent = data_readmeGit.data
+        }else{
+            if(getCache(project.mechanic?.url_readme || "")){
+                markdownContent = getCache(project.mechanic?.url_readme || "")
+            }else{
+
+                const response_readmeAzure = await fetch(backendConfig.BackendUrlRoot+"/azure/md", {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
@@ -41,46 +65,37 @@ export default function AboutProject({ language, project, type }: AboutProjectPr
                     },
                     body: JSON.stringify({
                         device: _auth.data.device,
-                        repoName: project.software?.gitHubData.name || ""
+                        repoName: project.mechanic?.url_readme || ""
                     })
                 });
 
-                const data_readmeGit = await response_readmeGit.json();
+                const data_readmeAzure = await response_readmeAzure.json();
 
-                if(!data_readmeGit.status){
+                if(!data_readmeAzure.status){
                     return 
                 }
 
-                markdownContent = data_readmeGit.data
-            }else{
-                if(getCache(project.mechanic?.url_readme || "")){
-                    markdownContent = getCache(project.mechanic?.url_readme || "")
-                }else{
+                refreshTokenByAuth(data_readmeAzure.token)
+                setCache(project.mechanic?.url_readme || "", data_readmeAzure.data)
+                markdownContent = data_readmeAzure.data
+            }
+        }
 
-                    const response_readmeAzure = await fetch("https://syncprofilewebbackend-production.up.railway.app/azure/md", {
-                        method: "POST",
-                        headers: {
-                            "Content-Type": "application/json",
-                            "Authorization": `Bearer ${_auth.token}`,
-                            "nonce": `${_auth.data.nonce()}`
-                        },
-                        body: JSON.stringify({
-                            device: _auth.data.device,
-                            repoName: project.mechanic?.url_readme || ""
-                        })
-                    });
-    
-                    const data_readmeAzure = await response_readmeAzure.json();
-    
-                    if(!data_readmeAzure.status){
-                        return 
-                    }
-                    setCache(project.mechanic?.url_readme || "", data_readmeAzure.data)
-                    markdownContent = data_readmeAzure.data
-                }
+        return markdownContent;
+    }
+
+    async function fetchMarkdownContent() {
+        try {
+            setIsLoading(true);
+            const markdownContent = await getMd();
+            
+            const _auth = await ValidateRequest()
+
+            if(!_auth.auth || !_auth.data){
+                return
             }
 
-            const response = await fetch(`https://syncprofilewebbackend-production.up.railway.app/render/md`, {
+            const response = await fetch(backendConfig.BackendUrlRoot+`/render/md`, {
                 method: 'POST',
                 headers: {
                   'Content-Type': 'application/json',
@@ -95,6 +110,7 @@ export default function AboutProject({ language, project, type }: AboutProjectPr
                 return 
             }
 
+            refreshTokenByAuth(data.token)
             if (data.data) {
                 setContent(data.data);
             } else {

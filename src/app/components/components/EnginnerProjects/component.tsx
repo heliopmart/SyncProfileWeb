@@ -15,11 +15,11 @@ const selectRandomImage = () => {
 }
 
 export default function EnginnerProjects({languageSelect}:{languageSelect:string}){
-    const {auth} = useAuth()
+    const {ValidateRequest} = useAuth()
     const [projects, setProjects] = useState<FirebaseMetadataDocument[]>([])
 
     async function fetchProjects() {
-        const _auth = await auth()
+        const _auth = await ValidateRequest()
 
         if(!_auth.auth){
             return

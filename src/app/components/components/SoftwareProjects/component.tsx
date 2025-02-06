@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import {useAuth} from '@/app/hooks/useAuth'
+import {backendConfig} from '@/app/config/backendConfig'
 import AOS from 'aos';
 import 'aos/dist/aos.css';
 import Image from 'next/image'
@@ -21,7 +22,7 @@ interface InformationProject {
 }
 
 export default function SoftwareProjects({ languageSelect }: { languageSelect: string }) {
-    const {auth} = useAuth()
+    const {ValidateRequest, refreshTokenByAuth} = useAuth()
     const [projects, setProjects] = useState<InformationProject[]>([]);
     const router = useRouter();
     
@@ -66,13 +67,13 @@ export default function SoftwareProjects({ languageSelect }: { languageSelect: s
 
     useEffect(() => {
         async function fetchProjects() {
-            const _auth = await auth()
+            const _auth = await ValidateRequest()
 
             if(!_auth.auth || !_auth.data){
                 return 
             }
 
-            const res = await fetch("https://syncprofilewebbackend-production.up.railway.app/github/repo", {
+            const res = await fetch(backendConfig.BackendUrlRoot+"/github/repo", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -87,8 +88,10 @@ export default function SoftwareProjects({ languageSelect }: { languageSelect: s
 
             if(!data.status){
                 console.error("GitHub Api 100% used")
-                return 
+                return  
             }
+
+            refreshTokenByAuth(data.token)
             FilterInformation(data.data);
         }
         fetchProjects();
