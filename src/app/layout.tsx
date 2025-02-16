@@ -31,6 +31,8 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           <meta property="og:url" content="https://profile-bxy80z11q-heliopmarts-projects.vercel.app/" />
           <meta property="og:type" content="website" />
           <meta name="robots" content="index, follow" />
+          
+          <meta name="google-site-verification" content="o0xovSMv5gOS6PMLTts94H-fHESxwpzfacRtCNuVeOE" />
 
           <title>Hélio Martins - Eng de Software | Eng Mecânico</title>
 
