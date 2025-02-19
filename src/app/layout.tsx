@@ -19,7 +19,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           />
           <meta
             name="keywords"
-            content="Hélio Martins, Desenvolvedor, Engenheiro de Software, Engenheiro Mecânico, Programação, Projetos, Tecnologia, Portfólio"
+            content="Hélio Martins, Hélio Peres, Hélio, UFGD, Unigran, ufgd, unigran, hélio, helio, eng, Desenvolvedor, Engenheiro de Software, Engenheiro Mecânico, Programação, Projetos, Tecnologia, Portfólio"
           />
           <meta name="author" content="Hélio Martins" />
           <meta property="og:title" content="Hélio Martins - Estudante de Eng Mecânica e Eng de Software" />
@@ -27,8 +27,8 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             property="og:description"
             content="Descubra os projetos e habilidades de Hélio Martins, um apaixonado por inovação e tecnologia."
           />
-          <meta property="og:image" content="/images/profile-og-image.png" />
-          <meta property="og:url" content="https://profile-bxy80z11q-heliopmarts-projects.vercel.app/" />
+          <meta property="og:image" content="/favicon.png" />
+          <meta property="og:url" content="https://profile-web-git-main-heliopmarts-projects.vercel.app/" />
           <meta property="og:type" content="website" />
           <meta name="robots" content="index, follow" />
           
@@ -36,7 +36,8 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 
           <title>Hélio Martins - Eng de Software | Eng Mecânico</title>
 
-          <link rel="icon" href="/favicon.ico" type="image/x-icon" />
+          <link rel="icon" href="/favicon.ico?v=2" type="image/x-icon" />
+          <link rel="icon" href="/favicon.png" type="image/png"/>
         </head>
       <body>
         {children}

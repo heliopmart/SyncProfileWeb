@@ -2,8 +2,5 @@
 User-agent: *
 Allow: /
 
-# Host
-Host: https://profile-web-git-main-heliopmarts-projects.vercel.app
-
 # Sitemaps
 Sitemap: https://profile-web-git-main-heliopmarts-projects.vercel.app/sitemap.xml
